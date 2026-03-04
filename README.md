@@ -10,6 +10,68 @@ Este repositorio no es un tutorial más. Es un **sistema de aprendizaje integrad
 
 ---
 
+## 🧩 ¿Qué hace esta aplicación?
+
+Este repositorio incluye **dos aplicaciones reales y ejecutables**, no solo código de ejemplo:
+
+### 🌐 Servidor HTTP de Usuarios (`cmd/server`)
+
+Una API REST que gestiona usuarios con arquitectura de producción:
+
+| Operación | Qué hace el usuario |
+|-----------|---------------------|
+| `POST /users` | Registra un nuevo usuario (nombre, email, contraseña) |
+| `GET /users/{id}` | Consulta los datos de un usuario por su ID |
+
+```bash
+# Arrancar el servidor
+go run ./cmd/server
+# Servidor escuchando en http://localhost:8080
+
+# Crear un usuario
+curl -X POST http://localhost:8080/users \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Alice","email":"alice@example.com","password":"secret"}'
+
+# Consultar un usuario
+curl http://localhost:8080/users/1
+```
+
+El servidor valida entradas, devuelve errores descriptivos (400, 404, 500) y almacena los datos en memoria.
+
+---
+
+### ⚙️ Procesador Batch de Usuarios (`cmd/workers`)
+
+Un sistema de procesamiento masivo en paralelo que:
+
+1. **Genera** N usuarios ficticios (configurable, por defecto 2000)
+2. **Procesa** cada usuario en paralelo: calcula un hash SHA-256 (carga CPU) y simula un guardado en base de datos (carga I/O)
+3. **Registra** toda la actividad con un logger que nunca bloquea el procesamiento
+4. **Reporta** cuántos usuarios se procesaron y en cuánto tiempo
+
+```bash
+# Ejecutar con valores por defecto (8 workers, 2000 usuarios, 10s timeout)
+go run ./cmd/workers
+
+# Personalizar
+go run ./cmd/workers -workers=16 -jobs=10000 -timeout=30s
+
+# Salida de ejemplo:
+# [worker-01] cpu: 1.2ms, io: 3.1ms → user-0042
+# [worker-03] cpu: 1.1ms, io: 3.0ms → user-0091
+# ...
+# Processed: 2000 | Dropped logs: 0 | Duration: 4.3s
+```
+
+Es el mismo patrón que usan sistemas reales para:
+- Procesar pedidos de e-commerce masivamente
+- Enviar notificaciones push a millones de usuarios
+- Indexar documentos en buscadores
+- Generar reportes nocturnos
+
+---
+
 ## 🗺️ Mapa de Aprendizaje
 
 ```
